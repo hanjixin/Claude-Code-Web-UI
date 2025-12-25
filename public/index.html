@@ -298,7 +298,7 @@
         }
         
         /* 悬停效果增强 */
-        .file-item:hover .lucide {
+        .file-item:hover [data-feather] {
             transform: scale(1.1);
         }
         
@@ -408,9 +408,9 @@
                     'gif': { name: 'image', color: 'text-purple-400' },
                     'svg': { name: 'image', color: 'text-yellow-400' },
                     'pdf': { name: 'file', color: 'text-red-400' },
-                    'zip': { name: 'archive', color: 'text-yellow-500' },
-                    'tar': { name: 'archive', color: 'text-yellow-500' },
-                    'gz': { name: 'archive', color: 'text-yellow-500' },
+                    'zip': { name: 'package', color: 'text-yellow-500' },
+                    'tar': { name: 'package', color: 'text-yellow-500' },
+                    'gz': { name: 'package', color: 'text-yellow-500' },
                     'txt': { name: 'file-text', color: 'text-gray-400' }
                 };
                 return iconMap[ext] || { name: 'file', color: 'text-gray-400' };
@@ -584,18 +584,18 @@
                 }
             };
 
-            // 初始化Lucide图标
+            // 初始化Feather图标
             React.useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
+                if (window.feather) {
+                    window.feather.replace();
                 }
             });
 
             // 当文件列表变化时重新初始化图标
             React.useEffect(() => {
-                if (window.lucide) {
+                if (window.feather) {
                     setTimeout(() => {
-                        window.lucide.createIcons();
+                        window.feather.replace();
                     }, 100);
                 }
             }, [files, selectedFile]);
@@ -607,7 +607,7 @@
                         <h1 className="text-xl font-bold">Claude Code Web Manager</h1>
                         <div className="flex gap-3">
                             <button className="btn btn-primary" onClick={saveFile} title="保存文件">
-                                <span className="lucide lucide-save h-4 w-4"></span>
+                                <i data-feather="save" className="h-4 w-4"></i>
                                 <span className="ml-1">保存文件</span>
                             </button>
                         </div>
@@ -621,10 +621,10 @@
                                 <h2 className="text-sm font-semibold text-gray-300 mb-3">文件浏览器</h2>
                                 <div className="flex gap-2 mb-3">
                                     <button className="btn btn-primary flex-1" onClick={() => loadFiles('.')}>
-                                        <span className="lucide lucide-home h-3.5 w-3.5 mr-1"></span>首页
+                                        <i data-feather="home" className="h-3.5 w-3.5 mr-1"></i>首页
                                     </button>
                                     <button className="btn btn-secondary" onClick={createDirectory}>
-                                        <span className="lucide lucide-folder-plus h-3.5 w-3.5"></span>
+                                        <i data-feather="folder-plus" className="h-3.5 w-3.5"></i>
                                     </button>
                                 </div>
                                 <div className="flex gap-2">
@@ -636,14 +636,14 @@
                                         onChange={(e) => setCurrentPath(e.target.value)}
                                     />
                                     <button className="btn btn-primary" onClick={() => loadFiles(currentPath)}>
-                                        <span className="lucide lucide-search h-3.5 w-3.5"></span>
+                                        <i data-feather="search" className="h-3.5 w-3.5"></i>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="file-tree overflow-y-auto">
                                 <div className="file-item" onClick={() => loadFiles(path.dirname(currentPath))}>
-                                    <span className="lucide lucide-chevron-left h-4 w-4 text-gray-500"></span>
+                                    <i data-feather="chevron-left" className="h-4 w-4 text-gray-500"></i>
                                     <span>上一级</span>
                                 </div>
                                 {files.map((file, index) => {
@@ -657,15 +657,17 @@
                                             onClick={() => file.isDirectory ? loadFiles(file.path) : loadFileContent(file)}
                                             onDoubleClick={() => !file.isDirectory && loadFileContent(file)}
                                         >
-                                            <span className={`lucide lucide-${icon.name} h-4 w-4 ${icon.color}`}></span>
+                                            <i data-feather={icon.name} className={`h-4 w-4 ${icon.color}`}></i>
                                             <span className="truncate flex-1">{file.name}</span>
                                             <button 
-                                                className="opacity-0 group-hover:opacity-100 lucide lucide-trash-2 h-3.5 w-3.5 text-gray-500 hover:text-red-500" 
+                                                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500" 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     deleteItem(file);
                                                 }}
-                                            ></button>
+                                            >
+                                                <i data-feather="trash-2" className="h-3.5 w-3.5"></i>
+                                            </button>
                                         </div>
                                     );
                                 })}
@@ -736,7 +738,7 @@
                                             onChange={(e) => setWorkingDir(e.target.value)}
                                         />
                                         <button className="btn btn-primary" onClick={executeCommand}>
-                                            <span className="lucide lucide-play h-3.5 w-3.5"></span>
+                                            <i data-feather="play" className="h-3.5 w-3.5"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -744,7 +746,7 @@
                                     <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
                                         <span className="text-sm font-semibold text-gray-300">执行日志</span>
                                         <button className="btn btn-secondary text-xs" onClick={clearLogs}>
-                                            <span className="lucide lucide-trash h-3 w-3"></span>
+                                            <i data-feather="trash" className="h-3 w-3"></i>
                                             <span className="ml-1">清空</span>
                                         </button>
                                     </div>
@@ -778,9 +780,9 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
         
-        // 初始化Lucide图标
+        // 初始化Feather图标
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+            feather.replace();
         });
     </script>
 </body>
