@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         /* 基础样式 */
         * {
@@ -80,6 +80,13 @@
             justify-content: center;
             gap: 0.375rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
         }
         
         .btn-primary {
@@ -298,7 +305,7 @@
         }
         
         /* 悬停效果增强 */
-        .file-item:hover [data-feather] {
+        .file-item:hover i {
             transform: scale(1.1);
         }
         
@@ -374,46 +381,46 @@
             const getFileIcon = (fileName) => {
                 const ext = fileName.split('.').pop().toLowerCase();
                 const iconMap = {
-                    'js': { name: 'code', color: 'text-yellow-400' },
-                    'jsx': { name: 'code', color: 'text-yellow-400' },
-                    'ts': { name: 'code', color: 'text-blue-400' },
-                    'tsx': { name: 'code', color: 'text-blue-400' },
-                    'html': { name: 'code', color: 'text-orange-400' },
-                    'htm': { name: 'code', color: 'text-orange-400' },
-                    'css': { name: 'code', color: 'text-blue-500' },
-                    'scss': { name: 'code', color: 'text-pink-400' },
-                    'json': { name: 'code', color: 'text-yellow-300' },
-                    'md': { name: 'file-text', color: 'text-gray-300' },
-                    'xml': { name: 'code', color: 'text-green-400' },
-                    'yaml': { name: 'file-text', color: 'text-red-400' },
-                    'yml': { name: 'file-text', color: 'text-red-400' },
-                    'py': { name: 'code', color: 'text-green-500' },
-                    'java': { name: 'code', color: 'text-red-500' },
-                    'c': { name: 'code', color: 'text-blue-300' },
-                    'cpp': { name: 'code', color: 'text-blue-300' },
-                    'h': { name: 'code', color: 'text-purple-400' },
-                    'hpp': { name: 'code', color: 'text-purple-400' },
-                    'go': { name: 'code', color: 'text-cyan-400' },
-                    'rs': { name: 'code', color: 'text-orange-500' },
-                    'php': { name: 'code', color: 'text-indigo-400' },
-                    'rb': { name: 'code', color: 'text-red-400' },
-                    'sh': { name: 'terminal', color: 'text-green-400' },
-                    'bash': { name: 'terminal', color: 'text-green-400' },
-                    'sql': { name: 'database', color: 'text-blue-400' },
-                    'git': { name: 'git-branch', color: 'text-orange-500' },
-                    'lock': { name: 'lock', color: 'text-gray-400' },
-                    'png': { name: 'image', color: 'text-purple-400' },
-                    'jpg': { name: 'image', color: 'text-purple-400' },
-                    'jpeg': { name: 'image', color: 'text-purple-400' },
-                    'gif': { name: 'image', color: 'text-purple-400' },
-                    'svg': { name: 'image', color: 'text-yellow-400' },
-                    'pdf': { name: 'file', color: 'text-red-400' },
-                    'zip': { name: 'package', color: 'text-yellow-500' },
-                    'tar': { name: 'package', color: 'text-yellow-500' },
-                    'gz': { name: 'package', color: 'text-yellow-500' },
-                    'txt': { name: 'file-text', color: 'text-gray-400' }
+                    'js': { name: 'ri-code-s-slash-line', color: 'text-yellow-400' },
+                    'jsx': { name: 'ri-code-s-slash-line', color: 'text-yellow-400' },
+                    'ts': { name: 'ri-code-s-slash-line', color: 'text-blue-400' },
+                    'tsx': { name: 'ri-code-s-slash-line', color: 'text-blue-400' },
+                    'html': { name: 'ri-html5-line', color: 'text-orange-400' },
+                    'htm': { name: 'ri-html5-line', color: 'text-orange-400' },
+                    'css': { name: 'ri-css3-line', color: 'text-blue-500' },
+                    'scss': { name: 'ri-css3-line', color: 'text-pink-400' },
+                    'json': { name: 'ri-braces-line', color: 'text-yellow-300' },
+                    'md': { name: 'ri-markdown-line', color: 'text-gray-300' },
+                    'xml': { name: 'ri-code-line', color: 'text-green-400' },
+                    'yaml': { name: 'ri-file-text-line', color: 'text-red-400' },
+                    'yml': { name: 'ri-file-text-line', color: 'text-red-400' },
+                    'py': { name: 'ri-code-line', color: 'text-green-500' },
+                    'java': { name: 'ri-code-line', color: 'text-red-500' },
+                    'c': { name: 'ri-code-line', color: 'text-blue-300' },
+                    'cpp': { name: 'ri-code-line', color: 'text-blue-300' },
+                    'h': { name: 'ri-code-line', color: 'text-purple-400' },
+                    'hpp': { name: 'ri-code-line', color: 'text-purple-400' },
+                    'go': { name: 'ri-code-line', color: 'text-cyan-400' },
+                    'rs': { name: 'ri-code-line', color: 'text-orange-500' },
+                    'php': { name: 'ri-code-line', color: 'text-indigo-400' },
+                    'rb': { name: 'ri-code-line', color: 'text-red-400' },
+                    'sh': { name: 'ri-terminal-line', color: 'text-green-400' },
+                    'bash': { name: 'ri-terminal-line', color: 'text-green-400' },
+                    'sql': { name: 'ri-database-2-line', color: 'text-blue-400' },
+                    'git': { name: 'ri-git-branch-line', color: 'text-orange-500' },
+                    'lock': { name: 'ri-lock-line', color: 'text-gray-400' },
+                    'png': { name: 'ri-image-line', color: 'text-purple-400' },
+                    'jpg': { name: 'ri-image-line', color: 'text-purple-400' },
+                    'jpeg': { name: 'ri-image-line', color: 'text-purple-400' },
+                    'gif': { name: 'ri-image-line', color: 'text-purple-400' },
+                    'svg': { name: 'ri-image-line', color: 'text-yellow-400' },
+                    'pdf': { name: 'ri-file-pdf-line', color: 'text-red-400' },
+                    'zip': { name: 'ri-file-zip-line', color: 'text-yellow-500' },
+                    'tar': { name: 'ri-file-zip-line', color: 'text-yellow-500' },
+                    'gz': { name: 'ri-file-zip-line', color: 'text-yellow-500' },
+                    'txt': { name: 'ri-file-text-line', color: 'text-gray-400' }
                 };
-                return iconMap[ext] || { name: 'file', color: 'text-gray-400' };
+                return iconMap[ext] || { name: 'ri-file-line', color: 'text-gray-400' };
             };
 
             // 加载文件列表
@@ -485,6 +492,24 @@
                 } catch (error) {
                     console.error('创建目录失败:', error);
                     alert('创建目录失败');
+                }
+            };
+
+            // 创建文件
+            const createFile = async () => {
+                const fileName = prompt('请输入文件名称:');
+                if (!fileName) return;
+                
+                try {
+                    await fetch('/api/files/write', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: `${currentPath}/${fileName}`, content: '' })
+                    });
+                    loadFiles(currentPath);
+                } catch (error) {
+                    console.error('创建文件失败:', error);
+                    alert('创建文件失败');
                 }
             };
 
@@ -584,22 +609,6 @@
                 }
             };
 
-            // 初始化Feather图标
-            React.useEffect(() => {
-                if (window.feather) {
-                    window.feather.replace();
-                }
-            });
-
-            // 当文件列表变化时重新初始化图标
-            React.useEffect(() => {
-                if (window.feather) {
-                    setTimeout(() => {
-                        window.feather.replace();
-                    }, 100);
-                }
-            }, [files, selectedFile]);
-
             return (
                 <div className="flex flex-col h-screen">
                     {/* 头部 */}
@@ -607,7 +616,7 @@
                         <h1 className="text-xl font-bold">Claude Code Web Manager</h1>
                         <div className="flex gap-3">
                             <button className="btn btn-primary" onClick={saveFile} title="保存文件">
-                                <i data-feather="save" className="h-4 w-4"></i>
+                                <i className="ri-save-line h-4 w-4"></i>
                                 <span className="ml-1">保存文件</span>
                             </button>
                         </div>
@@ -621,10 +630,13 @@
                                 <h2 className="text-sm font-semibold text-gray-300 mb-3">文件浏览器</h2>
                                 <div className="flex gap-2 mb-3">
                                     <button className="btn btn-primary flex-1" onClick={() => loadFiles('.')}>
-                                        <i data-feather="home" className="h-3.5 w-3.5 mr-1"></i>首页
+                                        <i className="ri-home-line h-3.5 w-3.5 mr-1"></i>首页
                                     </button>
                                     <button className="btn btn-secondary" onClick={createDirectory}>
-                                        <i data-feather="folder-plus" className="h-3.5 w-3.5"></i>
+                                        <i className="ri-folder-add-line h-3.5 w-3.5"></i>
+                                    </button>
+                                    <button className="btn btn-secondary" onClick={createFile}>
+                                        <i className="ri-file-add-line h-3.5 w-3.5"></i>
                                     </button>
                                 </div>
                                 <div className="flex gap-2">
@@ -636,19 +648,19 @@
                                         onChange={(e) => setCurrentPath(e.target.value)}
                                     />
                                     <button className="btn btn-primary" onClick={() => loadFiles(currentPath)}>
-                                        <i data-feather="search" className="h-3.5 w-3.5"></i>
+                                        <i className="ri-search-line h-3.5 w-3.5"></i>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="file-tree overflow-y-auto">
                                 <div className="file-item" onClick={() => loadFiles(path.dirname(currentPath))}>
-                                    <i data-feather="chevron-left" className="h-4 w-4 text-gray-500"></i>
+                                    <i className="ri-arrow-left-s-line h-4 w-4 text-gray-500"></i>
                                     <span>上一级</span>
                                 </div>
                                 {files.map((file, index) => {
                                     const icon = file.isDirectory === true 
-                                        ? { name: 'folder', color: 'text-yellow-500' } 
+                                        ? { name: 'ri-folder-line', color: 'text-yellow-500' } 
                                         : getFileIcon(file.name);
                                     return (
                                         <div 
@@ -657,7 +669,7 @@
                                             onClick={() => file.isDirectory ? loadFiles(file.path) : loadFileContent(file)}
                                             onDoubleClick={() => !file.isDirectory && loadFileContent(file)}
                                         >
-                                            <i data-feather={icon.name} className={`h-4 w-4 ${icon.color}`}></i>
+                                            <i className={`${icon.name} h-4 w-4 ${icon.color}`}></i>
                                             <span className="truncate flex-1">{file.name}</span>
                                             <button 
                                                 className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500" 
@@ -666,7 +678,7 @@
                                                     deleteItem(file);
                                                 }}
                                             >
-                                                <i data-feather="trash-2" className="h-3.5 w-3.5"></i>
+                                                <i className="ri-delete-bin-line h-3.5 w-3.5"></i>
                                             </button>
                                         </div>
                                     );
@@ -738,7 +750,7 @@
                                             onChange={(e) => setWorkingDir(e.target.value)}
                                         />
                                         <button className="btn btn-primary" onClick={executeCommand}>
-                                            <i data-feather="play" className="h-3.5 w-3.5"></i>
+                                            <i className="ri-play-line h-3.5 w-3.5"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -746,7 +758,7 @@
                                     <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
                                         <span className="text-sm font-semibold text-gray-300">执行日志</span>
                                         <button className="btn btn-secondary text-xs" onClick={clearLogs}>
-                                            <i data-feather="trash" className="h-3 w-3"></i>
+                                            <i className="ri-delete-bin-line h-3 w-3"></i>
                                             <span className="ml-1">清空</span>
                                         </button>
                                     </div>
@@ -779,11 +791,6 @@
         // 渲染应用
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-        
-        // 初始化Feather图标
-        document.addEventListener('DOMContentLoaded', () => {
-            feather.replace();
-        });
     </script>
 </body>
 </html>
