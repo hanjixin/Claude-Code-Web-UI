@@ -9,8 +9,8 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
     <style>
         /* 基础样式 */
         * {
@@ -325,15 +325,96 @@
     <script type="text/babel">
         // 主应用组件
         function App() {
-            const [activeTab, setActiveTab] = React.useState('editor');
             const [currentPath, setCurrentPath] = React.useState('.');
             const [files, setFiles] = React.useState([]);
             const [selectedFile, setSelectedFile] = React.useState(null);
             const [fileContent, setFileContent] = React.useState('');
+            const [editor, setEditor] = React.useState(null);
             const [logs, setLogs] = React.useState([]);
             const [command, setCommand] = React.useState('');
             const [workingDir, setWorkingDir] = React.useState('.');
-            const [editor, setEditor] = React.useState(null);
+            const [language, setLanguage] = React.useState('javascript');
+
+            // 根据文件扩展名获取语言
+            const getLanguageFromExtension = (fileName) => {
+                const ext = fileName.split('.').pop().toLowerCase();
+                const languageMap = {
+                    'js': 'javascript',
+                    'jsx': 'javascript',
+                    'ts': 'typescript',
+                    'tsx': 'typescript',
+                    'html': 'html',
+                    'htm': 'html',
+                    'css': 'css',
+                    'scss': 'scss',
+                    'json': 'json',
+                    'md': 'markdown',
+                    'xml': 'xml',
+                    'yaml': 'yaml',
+                    'yml': 'yaml',
+                    'py': 'python',
+                    'java': 'java',
+                    'c': 'c',
+                    'cpp': 'cpp',
+                    'h': 'c',
+                    'hpp': 'cpp',
+                    'go': 'go',
+                    'rs': 'rust',
+                    'php': 'php',
+                    'rb': 'ruby',
+                    'sh': 'shell',
+                    'bash': 'shell',
+                    'sql': 'sql',
+                    'txt': 'plaintext'
+                };
+                return languageMap[ext] || 'plaintext';
+            };
+
+            // 根据文件扩展名获取图标
+            const getFileIcon = (fileName) => {
+                const ext = fileName.split('.').pop().toLowerCase();
+                const iconMap = {
+                    'js': { name: 'code', color: 'text-yellow-400' },
+                    'jsx': { name: 'code', color: 'text-yellow-400' },
+                    'ts': { name: 'code', color: 'text-blue-400' },
+                    'tsx': { name: 'code', color: 'text-blue-400' },
+                    'html': { name: 'code', color: 'text-orange-400' },
+                    'htm': { name: 'code', color: 'text-orange-400' },
+                    'css': { name: 'code', color: 'text-blue-500' },
+                    'scss': { name: 'code', color: 'text-pink-400' },
+                    'json': { name: 'code', color: 'text-yellow-300' },
+                    'md': { name: 'file-text', color: 'text-gray-300' },
+                    'xml': { name: 'code', color: 'text-green-400' },
+                    'yaml': { name: 'file-text', color: 'text-red-400' },
+                    'yml': { name: 'file-text', color: 'text-red-400' },
+                    'py': { name: 'code', color: 'text-green-500' },
+                    'java': { name: 'code', color: 'text-red-500' },
+                    'c': { name: 'code', color: 'text-blue-300' },
+                    'cpp': { name: 'code', color: 'text-blue-300' },
+                    'h': { name: 'code', color: 'text-purple-400' },
+                    'hpp': { name: 'code', color: 'text-purple-400' },
+                    'go': { name: 'code', color: 'text-cyan-400' },
+                    'rs': { name: 'code', color: 'text-orange-500' },
+                    'php': { name: 'code', color: 'text-indigo-400' },
+                    'rb': { name: 'code', color: 'text-red-400' },
+                    'sh': { name: 'terminal', color: 'text-green-400' },
+                    'bash': { name: 'terminal', color: 'text-green-400' },
+                    'sql': { name: 'database', color: 'text-blue-400' },
+                    'git': { name: 'git-branch', color: 'text-orange-500' },
+                    'lock': { name: 'lock', color: 'text-gray-400' },
+                    'png': { name: 'image', color: 'text-purple-400' },
+                    'jpg': { name: 'image', color: 'text-purple-400' },
+                    'jpeg': { name: 'image', color: 'text-purple-400' },
+                    'gif': { name: 'image', color: 'text-purple-400' },
+                    'svg': { name: 'image', color: 'text-yellow-400' },
+                    'pdf': { name: 'file', color: 'text-red-400' },
+                    'zip': { name: 'archive', color: 'text-yellow-500' },
+                    'tar': { name: 'archive', color: 'text-yellow-500' },
+                    'gz': { name: 'archive', color: 'text-yellow-500' },
+                    'txt': { name: 'file-text', color: 'text-gray-400' }
+                };
+                return iconMap[ext] || { name: 'file', color: 'text-gray-400' };
+            };
 
             // 加载文件列表
             const loadFiles = async (path = '.') => {
@@ -357,7 +438,11 @@
                     const response = await fetch(`/api/files/read?path=${encodeURIComponent(file.path)}`);
                     const data = await response.json();
                     
+                    const fileLanguage = getLanguageFromExtension(file.name);
+                    setLanguage(fileLanguage);
+                    
                     if (editor) {
+                        monaco.editor.setModelLanguage(editor.getModel(), fileLanguage);
                         editor.setValue(data.content);
                     } else {
                         setFileContent(data.content);
@@ -423,35 +508,6 @@
                 }
             };
 
-            // 执行命令
-            const executeCommand = async () => {
-                if (!command.trim()) return;
-                
-                try {
-                    await fetch('/api/claude/execute', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ command, workingDir })
-                    });
-                    setCommand('');
-                    loadLogs();
-                } catch (error) {
-                    console.error('执行命令失败:', error);
-                    alert('执行命令失败');
-                }
-            };
-
-            // 加载日志
-            const loadLogs = async () => {
-                try {
-                    const response = await fetch('/api/logs');
-                    const data = await response.json();
-                    setLogs(data.logs);
-                } catch (error) {
-                    console.error('加载日志失败:', error);
-                }
-            };
-
             // 初始化Monaco编辑器
             React.useEffect(() => {
                 require.config({
@@ -463,7 +519,7 @@
                 require(['vs/editor/editor.main'], () => {
                     const editorInstance = monaco.editor.create(document.getElementById('editor'), {
                         value: fileContent,
-                        language: 'javascript',
+                        language: language,
                         theme: 'vs-dark',
                         minimap: { enabled: false },
                         automaticLayout: true
@@ -472,13 +528,77 @@
                 });
             }, []);
 
+            // 当语言改变时更新编辑器语言
+            React.useEffect(() => {
+                if (editor) {
+                    monaco.editor.setModelLanguage(editor.getModel(), language);
+                }
+            }, [language, editor]);
+
             // 初始化加载
             React.useEffect(() => {
                 loadFiles();
                 loadLogs();
-                const interval = setInterval(loadLogs, 3000);
-                return () => clearInterval(interval);
             }, []);
+
+            // 加载日志
+            const loadLogs = async () => {
+                try {
+                    const response = await fetch('/api/logs');
+                    const data = await response.json();
+                    setLogs(data.logs || []);
+                } catch (error) {
+                    console.error('加载日志失败:', error);
+                }
+            };
+
+            // 执行命令
+            const executeCommand = async () => {
+                if (!command.trim()) return;
+                
+                try {
+                    const response = await fetch('/api/claude/execute', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ command, workingDir })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.status === 'running') {
+                        setCommand('');
+                        loadLogs();
+                    }
+                } catch (error) {
+                    console.error('执行命令失败:', error);
+                    alert('执行命令失败');
+                }
+            };
+
+            // 清空日志
+            const clearLogs = async () => {
+                try {
+                    await fetch('/api/logs/clear', { method: 'DELETE' });
+                    setLogs([]);
+                } catch (error) {
+                    console.error('清空日志失败:', error);
+                }
+            };
+
+            // 初始化Lucide图标
+            React.useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+
+            // 当文件列表变化时重新初始化图标
+            React.useEffect(() => {
+                if (window.lucide) {
+                    setTimeout(() => {
+                        window.lucide.createIcons();
+                    }, 100);
+                }
+            }, [files, selectedFile]);
 
             return (
                 <div className="flex flex-col h-screen">
@@ -488,16 +608,14 @@
                         <div className="flex gap-3">
                             <button className="btn btn-primary" onClick={saveFile} title="保存文件">
                                 <span className="lucide lucide-save h-4 w-4"></span>
-                            </button>
-                            <button className="btn btn-secondary" onClick={() => loadLogs()} title="刷新日志">
-                                <span className="lucide lucide-refresh-ccw h-4 w-4"></span>
+                                <span className="ml-1">保存文件</span>
                             </button>
                         </div>
                     </header>
 
                     {/* 主容器 */}
                     <div className="flex flex-1 overflow-hidden">
-                        {/* 侧边栏 - 文件浏览器 */}
+                        {/* 左侧 - 文件浏览器 */}
                         <aside className="w-72 sidebar flex flex-col">
                             <div className="sidebar-header">
                                 <h2 className="text-sm font-semibold text-gray-300 mb-3">文件浏览器</h2>
@@ -528,120 +646,127 @@
                                     <span className="lucide lucide-chevron-left h-4 w-4 text-gray-500"></span>
                                     <span>上一级</span>
                                 </div>
-                                {files.map((file, index) => (
-                                    <div 
-                                        key={index}
-                                        className={`file-item group ${selectedFile?.path === file.path ? 'file-item-selected' : ''}`}
-                                        onClick={() => file.isDirectory ? loadFiles(file.path) : loadFileContent(file)}
-                                        onDoubleClick={() => !file.isDirectory && loadFileContent(file)}
-                                    >
-                                        {file.isDirectory ? (
-                                            <span className="lucide lucide-folder h-4 w-4 text-yellow-500"></span>
-                                        ) : (
-                                            <span className="lucide lucide-file h-4 w-4 text-blue-400"></span>
-                                        )}
-                                        <span className="truncate flex-1">{file.name}</span>
-                                        <button 
-                                            className="opacity-0 group-hover:opacity-100 lucide lucide-trash-2 h-3.5 w-3.5 text-gray-500 hover:text-red-500" 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                deleteItem(file);
-                                            }}
-                                        ></button>
-                                    </div>
-                                ))}
+                                {files.map((file, index) => {
+                                    const icon = file.isDirectory === true 
+                                        ? { name: 'folder', color: 'text-yellow-500' } 
+                                        : getFileIcon(file.name);
+                                    return (
+                                        <div 
+                                            key={index}
+                                            className={`file-item group ${selectedFile?.path === file.path ? 'file-item-selected' : ''}`}
+                                            onClick={() => file.isDirectory ? loadFiles(file.path) : loadFileContent(file)}
+                                            onDoubleClick={() => !file.isDirectory && loadFileContent(file)}
+                                        >
+                                            <span className={`lucide lucide-${icon.name} h-4 w-4 ${icon.color}`}></span>
+                                            <span className="truncate flex-1">{file.name}</span>
+                                            <button 
+                                                className="opacity-0 group-hover:opacity-100 lucide lucide-trash-2 h-3.5 w-3.5 text-gray-500 hover:text-red-500" 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteItem(file);
+                                                }}
+                                            ></button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </aside>
 
-                        {/* 主内容区 */}
+                        {/* 右侧 - 编辑器和日志 */}
                         <main className="flex-1 flex flex-col main-content">
-                            {/* 标签页 */}
-                            <div className="tabs-container flex">
-                                <div 
-                                    className={`tab ${activeTab === 'editor' ? 'tab-active' : 'tab-inactive'}`}
-                                    onClick={() => setActiveTab('editor')}
-                                >
-                                    <span className="lucide lucide-code h-4 w-4 inline-block mr-2"></span>编辑器
+                            {/* 编辑器区域 */}
+                            <div className="flex-1 flex flex-col">
+                                <div className="tabs-container flex items-center justify-between px-4 py-2">
+                                    <span className="text-sm text-gray-300">
+                                        {selectedFile ? selectedFile.path : '未选择文件'}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-400">语言:</span>
+                                        <select 
+                                            className="input text-xs py-1 px-2 w-32"
+                                            value={language}
+                                            onChange={(e) => setLanguage(e.target.value)}
+                                        >
+                                            <option value="plaintext">Plain Text</option>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="typescript">TypeScript</option>
+                                            <option value="html">HTML</option>
+                                            <option value="css">CSS</option>
+                                            <option value="scss">SCSS</option>
+                                            <option value="json">JSON</option>
+                                            <option value="markdown">Markdown</option>
+                                            <option value="xml">XML</option>
+                                            <option value="yaml">YAML</option>
+                                            <option value="python">Python</option>
+                                            <option value="java">Java</option>
+                                            <option value="c">C</option>
+                                            <option value="cpp">C++</option>
+                                            <option value="go">Go</option>
+                                            <option value="rust">Rust</option>
+                                            <option value="php">PHP</option>
+                                            <option value="ruby">Ruby</option>
+                                            <option value="shell">Shell</option>
+                                            <option value="sql">SQL</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div 
-                                    className={`tab ${activeTab === 'terminal' ? 'tab-active' : 'tab-inactive'}`}
-                                    onClick={() => setActiveTab('terminal')}
-                                >
-                                    <span className="lucide lucide-terminal h-4 w-4 inline-block mr-2"></span>终端
-                                </div>
-                                <div 
-                                    className={`tab ${activeTab === 'logs' ? 'tab-active' : 'tab-inactive'}`}
-                                    onClick={() => setActiveTab('logs')}
-                                >
-                                    <span className="lucide lucide-file-text h-4 w-4 inline-block mr-2"></span>日志
+                                <div className="flex-1 editor-container">
+                                    <div id="editor" style={{ height: '100%', width: '100%' }}></div>
                                 </div>
                             </div>
 
-                            {/* 标签页内容 */}
-                            <div className="flex-1 editor-container overflow-hidden">
-                                {/* 编辑器标签 */}
-                                {activeTab === 'editor' && (
-                                    <div className="flex flex-col h-full">
-                                        <div id="editor" className="flex-1"></div>
+                            {/* 命令执行和日志区域 */}
+                            <div className="h-80 border-t border-gray-700 flex flex-col">
+                                <div className="sidebar-header">
+                                    <h2 className="text-sm font-semibold text-gray-300 mb-3">命令执行</h2>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            className="input flex-1" 
+                                            placeholder="输入命令..." 
+                                            value={command} 
+                                            onChange={(e) => setCommand(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && executeCommand()}
+                                        />
+                                        <input 
+                                            type="text" 
+                                            className="input w-48" 
+                                            placeholder="工作目录..." 
+                                            value={workingDir} 
+                                            onChange={(e) => setWorkingDir(e.target.value)}
+                                        />
+                                        <button className="btn btn-primary" onClick={executeCommand}>
+                                            <span className="lucide lucide-play h-3.5 w-3.5"></span>
+                                        </button>
                                     </div>
-                                )}
-
-                                {/* 终端标签 */}
-                                {activeTab === 'terminal' && (
-                                    <div className="p-4 h-full flex flex-col">
-                                        <div className="flex gap-3 mb-4">
-                                            <input 
-                                                type="text" 
-                                                className="input flex-1" 
-                                                placeholder="工作目录..." 
-                                                value={workingDir}
-                                                onChange={(e) => setWorkingDir(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="flex gap-3">
-                                            <input 
-                                                type="text" 
-                                                className="input flex-1" 
-                                                placeholder="输入命令..." 
-                                                value={command}
-                                                onChange={(e) => setCommand(e.target.value)}
-                                                onKeyPress={(e) => e.key === 'Enter' && executeCommand()}
-                                            />
-                                            <button className="btn btn-primary" onClick={executeCommand}>
-                                                <span className="lucide lucide-play h-4 w-4 mr-1"></span>执行
-                                            </button>
-                                        </div>
-                                        <div className="mt-4 bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-sm rounded-md p-3 h-full overflow-y-auto">
-                                            <pre className="text-sm text-gray-300 whitespace-pre-wrap">
-                                                {logs.slice(0, 20).map((log, index) => (
-                                                    <div key={index} className={`mb-1 ${log.type === 'error' ? 'text-red-400' : log.type === 'success' ? 'text-green-400' : 'text-blue-400'}`}>
-                                                        [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
+                                </div>
+                                <div className="flex-1 overflow-hidden flex flex-col">
+                                    <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
+                                        <span className="text-sm font-semibold text-gray-300">执行日志</span>
+                                        <button className="btn btn-secondary text-xs" onClick={clearLogs}>
+                                            <span className="lucide lucide-trash h-3 w-3"></span>
+                                            <span className="ml-1">清空</span>
+                                        </button>
+                                    </div>
+                                    <div className="log-container flex-1 overflow-y-auto">
+                                        {logs.length === 0 ? (
+                                            <div className="text-center text-gray-500 py-8">暂无日志</div>
+                                        ) : (
+                                            logs.map((log, index) => (
+                                                <div key={index} className={`log-entry log-${log.level}`}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-xs font-semibold uppercase">{log.level}</span>
+                                                        <span className="text-xs text-gray-400">{new Date(log.timestamp).toLocaleString()}</span>
                                                     </div>
-                                                ))}
-                                            </pre>
-                                        </div>
+                                                    <div className="text-sm">{log.message}</div>
+                                                    {log.output && (
+                                                        <pre className="text-xs mt-2 text-gray-400 whitespace-pre-wrap">{log.output}</pre>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
-                                )}
-
-                                {/* 日志标签 */}
-                                {activeTab === 'logs' && (
-                                    <div className="log-container">
-                                        {logs.map((log, index) => (
-                                            <div 
-                                                key={index} 
-                                                className={`log-entry ${log.type === 'info' ? 'log-info' : log.type === 'success' ? 'log-success' : 'log-error'}`}
-                                            >
-                                                <div className="font-medium">[{new Date(log.timestamp).toLocaleString()}] [{log.type.toUpperCase()}]</div>
-                                                <div>{log.message}</div>
-                                                {log.data && (
-                                                    <pre className="text-xs mt-1 bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-sm p-2 rounded-md overflow-x-auto">
-                                                        {JSON.stringify(log.data, null, 2)}
-                                                    </pre>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                </div>
                             </div>
                         </main>
                     </div>
