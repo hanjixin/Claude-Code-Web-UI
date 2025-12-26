@@ -1,59 +1,65 @@
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
 const logModel = require('./LogModel');
 
 class ClaudeModel {
-  static executeCommand(command, workingDir) {
+  static executeCommand(command, workingDir, timeout = 60000) {
     const cwd = workingDir ? path.resolve(workingDir) : process.cwd();
     
     const executionLog = logModel.addExecutionLog(command, cwd);
     
-    const claudeProcess = spawn('claude', command.split(' '), {
-      cwd,
-      shell: true,
-      env: { ...process.env }
-    });
-
-    claudeProcess.stdout.on('data', (data) => {
-      const output = data.toString();
-      logModel.updateExecutionLog(executionLog.id, {
-        output: executionLog.output + output
+    try {
+      const output = execSync(command, {
+        cwd,
+        encoding: 'utf8',
+        timeout,
+        shell: '/bin/zsh',
+        env: { ...process.env }
       });
-      console.log(`Claude stdout: ${output}`);
-    });
-
-    claudeProcess.stderr.on('data', (data) => {
-      const error = data.toString();
+      
       logModel.updateExecutionLog(executionLog.id, {
-        error: executionLog.error + error
-      });
-      console.error(`Claude stderr: ${error}`);
-    });
-
-    claudeProcess.on('close', (code) => {
-      logModel.updateExecutionLog(executionLog.id, {
-        status: code === 0 ? 'success' : 'failed',
-        exitCode: code,
+        status: 'success',
+        output: output || '',
+        exitCode: 0,
         endTime: new Date().toISOString()
       });
       
-      logModel.addLog(code === 0 ? 'success' : 'error',
-        `Claude Code execution ${code === 0 ? 'success' : 'failed'}`,
-        { command, exitCode: code }
-      );
-    });
-
-    claudeProcess.on('error', (err) => {
+      logModel.addLog('success', 'Claude Code execution completed', { command, exitCode: 0 });
+      
+      return {
+        ...executionLog,
+        status: 'success',
+        output: output || '',
+        exitCode: 0,
+        endTime: new Date().toISOString()
+      };
+    } catch (error) {
+      const errorOutput = error.stdout || error.message;
+      const exitCode = error.status || 1;
+      
       logModel.updateExecutionLog(executionLog.id, {
         status: 'failed',
-        error: executionLog.error + `\nProcess error: ${err.message}`,
+        output: errorOutput,
+        error: error.stderr || error.message,
+        exitCode,
         endTime: new Date().toISOString()
       });
       
-      logModel.addLog('error', 'Claude Code execution failed', err.message);
-    });
+      logModel.addLog('error', 'Claude Code execution failed', { command, error: error.message });
+      
+      return {
+        ...executionLog,
+        status: 'failed',
+        output: errorOutput,
+        error: error.stderr || error.message,
+        exitCode,
+        endTime: new Date().toISOString()
+      };
+    }
+  }
 
-    return executionLog;
+  static getExecutionLog(logId) {
+    return logModel.getExecutionLogs().find(log => log.id === logId);
   }
 }
 
