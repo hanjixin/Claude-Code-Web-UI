@@ -48,6 +48,14 @@ class EnvModel {
   getEnvObject() {
     const envObj = {};
     this.envVars.forEach(env => {
+      envObj[env.key] = env.value;
+    });
+    return envObj;
+  }
+
+  getPublicEnvObject() {
+    const envObj = {};
+    this.envVars.forEach(env => {
       if (!env.secret) {
         envObj[env.key] = env.value;
       }

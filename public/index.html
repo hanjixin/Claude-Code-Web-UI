@@ -606,6 +606,7 @@
             const [userConfig, setUserConfig] = React.useState({});
             const [showEnvModal, setShowEnvModal] = React.useState(false);
             const [editingEnv, setEditingEnv] = React.useState(null);
+            const [pendingEnvVar, setPendingEnvVar] = React.useState(null);
             const [terminalOutput, setTerminalOutput] = React.useState([]);
             const [terminalCommand, setTerminalCommand] = React.useState('');
             const [chatMessages, setChatMessages] = React.useState([]);
@@ -789,6 +790,37 @@
                 } catch (error) {
                     console.error('删除环境变量失败:', error);
                     alert('删除环境变量失败');
+                }
+            };
+
+            const importEnvVars = async (platform) => {
+                try {
+                    const response = await fetch('/api/env/import', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ platform })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        loadEnvVars();
+                        if (data.imported.length > 0) {
+                            alert(`成功导入: ${data.imported.join(', ')}`);
+                        }
+
+                        if (data.missing && data.missing.includes('ANTHROPIC_AUTH_TOKEN')) {
+                            setEditingEnv(null);
+                            setPendingEnvVar({
+                                key: 'ANTHROPIC_AUTH_TOKEN',
+                                value: '',
+                                description: `${platform === 'minimax' ? 'MiniMax' : 'BigModel'} API 密钥`,
+                                secret: true
+                            });
+                            setShowEnvModal(true);
+                        }
+                    }
+                } catch (error) {
+                    console.error('导入环境变量失败:', error);
+                    alert('导入环境变量失败');
                 }
             };
 
@@ -1032,10 +1064,10 @@
             };
 
             const EnvModal = ({ show, onClose, onSave, envVar }) => {
-                const [key, setKey] = useState(envVar?.key || '');
-                const [value, setValue] = useState(envVar?.value || '');
-                const [description, setDescription] = useState(envVar?.description || '');
-                const [secret, setSecret] = useState(envVar?.secret || false);
+                const [key, setKey] = useState(envVar?.key || pendingEnvVar?.key || '');
+                const [value, setValue] = useState(envVar?.value || pendingEnvVar?.value || '');
+                const [description, setDescription] = useState(envVar?.description || pendingEnvVar?.description || '');
+                const [secret, setSecret] = useState(envVar?.secret ?? pendingEnvVar?.secret ?? false);
 
                 if (!show) return null;
 
@@ -1091,6 +1123,7 @@
                                     className="btn btn-primary"
                                     onClick={() => {
                                         onSave({ key, value, description, secret });
+                                        setPendingEnvVar(null);
                                         onClose();
                                     }}
                                 >
@@ -1367,16 +1400,33 @@
                                 <div className="flex-1 overflow-auto p-6">
                                     <div className="flex justify-between items-center mb-6">
                                         <h2 className="text-xl font-semibold">环境变量配置</h2>
-                                        <button
-                                            className="btn btn-primary"
-                                            onClick={() => {
-                                                setEditingEnv(null);
-                                                setShowEnvModal(true);
-                                            }}
-                                        >
-                                            <i className="ri-add-line h-4 w-4"></i>
-                                            <span className="ml-1">添加变量</span>
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => importEnvVars('minimax')}
+                                            >
+                                                <i className="ri-download-line h-4 w-4"></i>
+                                                <span className="ml-1">导入MiniMax</span>
+                                            </button>
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => importEnvVars('bigmodel')}
+                                            >
+                                                <i className="ri-download-line h-4 w-4"></i>
+                                                <span className="ml-1">导入BigModel</span>
+                                            </button>
+                                            <button
+                                                className="btn btn-primary"
+                                                onClick={() => {
+                                                    setEditingEnv(null);
+                                                    setPendingEnvVar(null);
+                                                    setShowEnvModal(true);
+                                                }}
+                                            >
+                                                <i className="ri-add-line h-4 w-4"></i>
+                                                <span className="ml-1">添加变量</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-3">
                                         {envVars.map(env => (

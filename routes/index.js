@@ -59,5 +59,6 @@ router.put('/api/env/:id', EnvController.update);
 router.delete('/api/env/:id', EnvController.delete);
 router.get('/api/env/object', EnvController.getEnvObject);
 router.delete('/api/env', EnvController.clear);
+router.post('/api/env/import', EnvController.importFromSystem);
 
 module.exports = router;
