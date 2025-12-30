@@ -343,6 +343,8 @@
             overflow-y: auto;
             flex: 1;
             color: #e5e7eb;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .terminal-input-container {
@@ -880,6 +882,9 @@
             const executeTerminalCommand = async () => {
                 if (!terminalCommand.trim()) return;
 
+                console.log('[Frontend] Executing terminal command:', terminalCommand);
+                console.log('[Frontend] WebSocket status:', ws ? 'connected' : 'not connected');
+
                 if (!ws) {
                     alert('WebSocket 未连接');
                     return;
@@ -1017,16 +1022,29 @@
                 };
 
                 websocket.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log('[Frontend] WebSocket message received:', data);
+                        console.log('[Frontend] Message type:', data.type);
+                        console.log('[Frontend] Message content:', data.content);
 
-                    if (data.type === 'output') {
-                        setTerminalOutput(prev => [...prev, { type: 'output', content: data.content }]);
-                    } else if (data.type === 'error') {
-                        setTerminalOutput(prev => [...prev, { type: 'error', content: data.content }]);
-                        setTerminalStatus('error');
-                    } else if (data.type === 'close') {
-                        setTerminalStatus('idle');
-                        setTerminalOutput(prev => [...prev, { type: 'info', content: `\n进程结束，退出码: ${data.code}` }]);
+                        if (data.type === 'output') {
+                            console.log('[Frontend] Adding output to terminal');
+                            setTerminalOutput(prev => {
+                                console.log('[Frontend] Current terminal output length:', prev.length);
+                                return [...prev, { type: 'output', content: data.content }];
+                            });
+                        } else if (data.type === 'error') {
+                            console.log('[Frontend] Adding error to terminal');
+                            setTerminalOutput(prev => [...prev, { type: 'error', content: data.content }]);
+                            setTerminalStatus('error');
+                        } else if (data.type === 'close') {
+                            console.log('[Frontend] Process closed');
+                            setTerminalStatus('idle');
+                            setTerminalOutput(prev => [...prev, { type: 'info', content: `\n进程结束，退出码: ${data.code}` }]);
+                        }
+                    } catch (error) {
+                        console.error('[Frontend] Error parsing WebSocket message:', error);
                     }
                 };
 
@@ -1370,11 +1388,15 @@
                                             </div>
                                         </div>
                                         <div className="terminal-output" id="terminal-output">
+                                            <div style={{ display: 'none' }}>
+                                                Debug: terminalOutput length = {terminalOutput.length}
+                                            </div>
                                             {terminalOutput.length === 0 ? (
                                                 <div className="text-gray-500">终端就绪，输入命令开始...</div>
                                             ) : (
                                                 terminalOutput.map((line, index) => (
                                                     <div key={index} className={`mb-1 ${line.type === 'error' ? 'text-red-400' : line.type === 'input' ? 'text-green-400' : line.type === 'info' ? 'text-blue-400' : ''}`}>
+                                                        <span style={{ display: 'none' }}>[{line.type}]</span>
                                                         {line.content}
                                                     </div>
                                                 ))
