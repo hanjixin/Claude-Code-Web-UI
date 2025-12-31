@@ -15,10 +15,35 @@ const wss = new WebSocket.Server({ server });
 
 const PORT = 3000;
 
+// 设置 .jsx 文件的 MIME 类型
+express.static.mime.define({ 'text/javascript': ['jsx'] });
+
 // 中间件配置
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+
+// 专门处理 .jsx 文件的路由（必须在 express.static 之前）
+app.get(/.*\.jsx$/, (req, res, next) => {
+  res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+  next();
+});
+
+// 自定义静态文件服务，设置 .jsx 文件的 MIME 类型
+app.use('/src', express.static('public/src', {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.jsx')) {
+      res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    }
+  }
+}));
+
+app.use(express.static('public', {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.jsx')) {
+      res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    }
+  }
+}));
 
 // 设置 CSP 策略以支持 Monaco Editor
 app.use((req, res, next) => {
@@ -49,8 +74,12 @@ wss.on('connection', (ws) => {
         const customEnv = envModel.getEnvObject();
         const execEnv = { ...process.env, ...customEnv };
 
+        const isWindows = process.platform === 'win32';
+        const shell = isWindows ? 'cmd.exe' : '/bin/bash';
+        const shellArgs = isWindows ? ['/c', command] : ['-c', command];
+
         try {
-          childProcess = pty.spawn('/bin/bash', ['-c', command], {
+          childProcess = pty.spawn(shell, shellArgs, {
             name: 'xterm-256color',
             cols: 80,
             rows: 30,
@@ -74,7 +103,7 @@ wss.on('connection', (ws) => {
           console.error(`[WebSocket] PTY spawn failed, using stdio pipe:`, ptyError);
 
           try {
-            childProcess = spawn('/bin/bash', ['-c', command], {
+            childProcess = spawn(shell, shellArgs, {
               cwd,
               env: execEnv,
               stdio: ['pipe', 'pipe', 'pipe'],
@@ -139,6 +168,16 @@ wss.on('connection', (ws) => {
 // 主页面路由
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 专门处理 .jsx 文件
+app.get(/.*\.jsx$/, (req, res) => {
+  const filePath = path.join(__dirname, 'public', req.path);
+  res.sendFile(filePath, {
+    headers: {
+      'Content-Type': 'text/javascript; charset=utf-8'
+    }
+  });
 });
 
 // 启动服务器

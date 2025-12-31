@@ -1,0 +1,31 @@
+export const languageMap = {
+    'js': 'javascript',
+    'jsx': 'javascript',
+    'ts': 'typescript',
+    'tsx': 'typescript',
+    'html': 'html',
+    'htm': 'html',
+    'css': 'css',
+    'scss': 'scss',
+    'json': 'json',
+    'md': 'markdown',
+    'xml': 'xml',
+    'yaml': 'yaml',
+    'yml': 'yaml',
+    'py': 'python',
+    'java': 'java',
+    'c': 'c',
+    'cpp': 'cpp',
+    'h': 'c',
+    'hpp': 'cpp',
+    'go': 'go',
+    'rs': 'rust',
+    'php': 'php',
+    'rb': 'ruby',
+    'sh': 'shell',
+    'bash': 'shell',
+    'sql': 'sql',
+    'txt': 'plaintext'
+};
+
+export const defaultLanguage = 'plaintext';

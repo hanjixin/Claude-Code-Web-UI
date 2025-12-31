@@ -139,43 +139,6 @@
             box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
 
-        .tab {
-            padding: 0.75rem 1.25rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .tab-active {
-            color: white;
-            background: rgba(31, 41, 55, 0.8);
-        }
-
-        .tab-active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            border-radius: 2px 2px 0 0;
-        }
-
-        .tab-inactive {
-            color: #9ca3af;
-        }
-
-        .tab-inactive:hover {
-            color: #e5e7eb;
-            background: rgba(31, 41, 55, 0.5);
-        }
-
         .file-item {
             padding: 0.625rem 0.875rem;
             font-size: 0.875rem;
@@ -199,52 +162,6 @@
             border-left: 3px solid #8b5cf6;
         }
 
-        .log-container {
-            height: calc(100% - 4rem);
-            overflow-y: auto;
-            padding: 0.5rem;
-        }
-
-        .log-container::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .log-container::-webkit-scrollbar-track {
-            background: rgba(45, 55, 72, 0.5);
-            border-radius: 3px;
-        }
-
-        .log-container::-webkit-scrollbar-thumb {
-            background: rgba(74, 85, 104, 0.8);
-            border-radius: 3px;
-        }
-
-        .log-entry {
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-            background: rgba(31, 41, 55, 0.5);
-            border-left: 3px solid transparent;
-            backdrop-filter: blur(10px);
-        }
-
-        .log-info {
-            color: #93c5fd;
-            border-left-color: #3b82f6;
-        }
-
-        .log-success {
-            color: #86efac;
-            border-left-color: #10b981;
-        }
-
-        .log-error {
-            color: #fca5a5;
-            border-left-color: #ef4444;
-        }
-
         .file-tree {
             overflow-y: auto;
             height: calc(100% - 12rem);
@@ -265,29 +182,6 @@
         .file-tree::-webkit-scrollbar-thumb {
             background: rgba(74, 85, 104, 0.8);
             border-radius: 3px;
-        }
-
-        .nav-item {
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 0.5rem;
-            margin: 0.25rem 0.5rem;
-            color: #9ca3af;
-        }
-
-        .nav-item:hover {
-            background: rgba(55, 65, 81, 0.5);
-            color: #e5e7eb;
-        }
-
-        .nav-item-active {
-            background: rgba(139, 92, 246, 0.2);
-            color: #e9d5ff;
-            border-left: 3px solid #8b5cf6;
         }
 
         .header-nav-item {
@@ -471,39 +365,6 @@
             }
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-
-        .tab-content {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .btn:active {
-            transform: scale(0.95);
-        }
-
-        .input:focus {
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1), 0 0 10px rgba(139, 92, 246, 0.2);
-        }
-
-        .log-entry:hover {
-            transform: translateX(2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -583,6 +444,27 @@
         .resizer:hover {
             background: rgba(139, 92, 246, 0.5);
         }
+
+        .log-container {
+            height: calc(100% - 4rem);
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: rgba(45, 55, 72, 0.5);
+            border-radius: 3px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: rgba(74, 85, 104, 0.8);
+            border-radius: 3px;
+        }
     </style>
 </head>
 
@@ -592,35 +474,73 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        async function loadComponents() {
+            const componentFiles = [
+                'components/Header.jsx',
+                'components/Sidebar.jsx',
+                'components/EditorPanel.jsx',
+                'components/TerminalPanel.jsx',
+                'components/EnvPanel.jsx',
+                'components/SettingsPanel.jsx',
+                'components/ChatPanel.jsx',
+                'components/LogsPanel.jsx',
+                'components/EnvModal.jsx'
+            ];
+
+            for (const file of componentFiles) {
+                try {
+                    const response = await fetch(file);
+                    const code = await response.text();
+                    const transformedCode = Babel.transform(code, { presets: ['react'] }).code;
+                    eval(transformedCode);
+                    console.log(`Loaded component: ${file}`);
+                } catch (err) {
+                    console.error(`Error loading ${file}:`, err);
+                }
+            }
+            
+            console.log('All components loaded, checking window object...');
+            console.log('window.Header:', typeof window.Header);
+            console.log('window.Sidebar:', typeof window.Sidebar);
+            console.log('window.EditorPanel:', typeof window.EditorPanel);
+        }
+
         function App() {
-            const [activeTab, setActiveTab] = useState('files');
             const [activeNav, setActiveNav] = useState('editor');
-            const [currentPath, setCurrentPath] = React.useState('.');
-            const [files, setFiles] = React.useState([]);
-            const [selectedFile, setSelectedFile] = React.useState(null);
-            const [fileContent, setFileContent] = React.useState('');
-            const [editor, setEditor] = React.useState(null);
-            const [logs, setLogs] = React.useState([]);
-            const [command, setCommand] = React.useState('');
-            const [workingDir, setWorkingDir] = React.useState('.');
-            const [language, setLanguage] = React.useState('javascript');
-            const [envVars, setEnvVars] = React.useState([]);
-            const [userConfig, setUserConfig] = React.useState({});
-            const [showEnvModal, setShowEnvModal] = React.useState(false);
-            const [editingEnv, setEditingEnv] = React.useState(null);
-            const [pendingEnvVar, setPendingEnvVar] = React.useState(null);
-            const [terminalOutput, setTerminalOutput] = React.useState([]);
-            const [terminalCommand, setTerminalCommand] = React.useState('');
-            const [chatMessages, setChatMessages] = React.useState([]);
-            const [chatInput, setChatInput] = React.useState('');
-            const [sidebarWidth, setSidebarWidth] = React.useState(280);
-            const [terminalHeight, setTerminalHeight] = React.useState(200);
-            const [ws, setWs] = React.useState(null);
-            const [terminalStatus, setTerminalStatus] = React.useState('idle');
-            const [isResizing, setIsResizing] = React.useState(false);
-            const terminalOutputRef = React.useRef(null);
-            const handleMouseMoveRef = React.useRef(null);
-            const handleMouseUpRef = React.useRef(null);
+            const [currentPath, setCurrentPath] = useState('.');
+            const [files, setFiles] = useState([]);
+            const [selectedFile, setSelectedFile] = useState(null);
+            const [fileContent, setFileContent] = useState('');
+            const [editor, setEditor] = useState(null);
+            const [logs, setLogs] = useState([]);
+            const [language, setLanguage] = useState('javascript');
+            const [envVars, setEnvVars] = useState([]);
+            const [userConfig, setUserConfig] = useState({});
+            const [showEnvModal, setShowEnvModal] = useState(false);
+            const [editingEnv, setEditingEnv] = useState(null);
+            const [pendingEnvVar, setPendingEnvVar] = useState(null);
+            const [terminalOutput, setTerminalOutput] = useState([]);
+            const [terminalCommand, setTerminalCommand] = useState('');
+            const [chatMessages, setChatMessages] = useState([]);
+            const [chatInput, setChatInput] = useState('');
+            const [sidebarWidth, setSidebarWidth] = useState(280);
+            const [terminalHeight, setTerminalHeight] = useState(200);
+            const [ws, setWs] = useState(null);
+            const [terminalStatus, setTerminalStatus] = useState('idle');
+            const [isResizing, setIsResizing] = useState(false);
+            const terminalOutputRef = useRef(null);
+            const handleMouseMoveRef = useRef(null);
+            const handleMouseUpRef = useRef(null);
+
+            const Header = window.Header;
+            const Sidebar = window.Sidebar;
+            const EditorPanel = window.EditorPanel;
+            const TerminalPanel = window.TerminalPanel;
+            const EnvPanel = window.EnvPanel;
+            const SettingsPanel = window.SettingsPanel;
+            const ChatPanel = window.ChatPanel;
+            const LogsPanel = window.LogsPanel;
+            const EnvModal = window.EnvModal;
 
             const getLanguageFromExtension = (fileName) => {
                 const ext = fileName.split('.').pop().toLowerCase();
@@ -633,23 +553,6 @@
                     'sh': 'shell', 'bash': 'shell', 'sql': 'sql', 'txt': 'plaintext'
                 };
                 return languageMap[ext] || 'plaintext';
-            };
-
-            const getFileIcon = (fileName) => {
-                const ext = fileName.split('.').pop().toLowerCase();
-                const iconMap = {
-                    'js': { name: 'ri-code-s-slash-line', color: 'text-yellow-400' },
-                    'jsx': { name: 'ri-code-s-slash-line', color: 'text-yellow-400' },
-                    'ts': { name: 'ri-code-s-slash-line', color: 'text-blue-400' },
-                    'tsx': { name: 'ri-code-s-slash-line', color: 'text-blue-400' },
-                    'html': { name: 'ri-html5-line', color: 'text-orange-400' },
-                    'css': { name: 'ri-css3-line', color: 'text-blue-500' },
-                    'json': { name: 'ri-braces-line', color: 'text-yellow-300' },
-                    'md': { name: 'ri-markdown-line', color: 'text-gray-300' },
-                    'py': { name: 'ri-code-line', color: 'text-green-500' },
-                    'sh': { name: 'ri-terminal-line', color: 'text-green-400' }
-                };
-                return iconMap[ext] || { name: 'ri-file-line', color: 'text-gray-400' };
             };
 
             const loadFiles = async (path = '.') => {
@@ -860,30 +763,8 @@
                 }
             };
 
-            const executeCommand = async () => {
-                if (!command.trim()) return;
-                try {
-                    const response = await fetch('/api/claude/execute', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ command, workingDir })
-                    });
-                    const data = await response.json();
-                    if (data.status === 'running') {
-                        setCommand('');
-                        loadLogs();
-                    }
-                } catch (error) {
-                    console.error('执行命令失败:', error);
-                    alert('执行命令失败');
-                }
-            };
-
             const executeTerminalCommand = async () => {
                 if (!terminalCommand.trim()) return;
-
-                console.log('[Frontend] Executing terminal command:', terminalCommand);
-                console.log('[Frontend] WebSocket status:', ws ? 'connected' : 'not connected');
 
                 if (!ws) {
                     alert('WebSocket 未连接');
@@ -896,7 +777,7 @@
                 ws.send(JSON.stringify({
                     type: 'command',
                     command: terminalCommand,
-                    workingDir
+                    workingDir: currentPath
                 }));
 
                 setTerminalCommand('');
@@ -947,7 +828,7 @@
                     const response = await fetch('/api/claude/execute', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ command: `claude ${chatInput}`, workingDir })
+                        body: JSON.stringify({ command: `claude ${chatInput}`, workingDir: currentPath })
                     });
                     const data = await response.json();
                     setChatMessages(prev => [...prev, { role: 'assistant', content: data.output || '处理完成' }]);
@@ -956,7 +837,16 @@
                 }
             };
 
-            React.useEffect(() => {
+            const clearLogs = async () => {
+                try {
+                    await fetch('/api/logs/clear', { method: 'DELETE' });
+                    setLogs([]);
+                } catch (error) {
+                    console.error('清空日志失败:', error);
+                }
+            };
+
+            useEffect(() => {
                 handleMouseMoveRef.current = (e) => {
                     if (!isResizing) return;
                     const container = document.querySelector('.main-content');
@@ -983,7 +873,7 @@
                 document.addEventListener('mouseup', handleMouseUpRef.current);
             };
 
-            React.useEffect(() => {
+            useEffect(() => {
                 require.config({
                     paths: { 'vs': 'https://unpkg.com/monaco-editor@0.45.0/min/vs' }
                 });
@@ -1000,20 +890,20 @@
                 });
             }, []);
 
-            React.useEffect(() => {
+            useEffect(() => {
                 if (editor) {
                     monaco.editor.setModelLanguage(editor.getModel(), language);
                 }
             }, [language, editor]);
 
-            React.useEffect(() => {
+            useEffect(() => {
                 const terminalOutputElement = document.getElementById('terminal-output');
                 if (terminalOutputElement) {
                     terminalOutputElement.scrollTop = terminalOutputElement.scrollHeight;
                 }
             }, [terminalOutput]);
 
-            React.useEffect(() => {
+            useEffect(() => {
                 const websocket = new WebSocket(`ws://${window.location.host}`);
 
                 websocket.onopen = () => {
@@ -1024,22 +914,13 @@
                 websocket.onmessage = (event) => {
                     try {
                         const data = JSON.parse(event.data);
-                        console.log('[Frontend] WebSocket message received:', data);
-                        console.log('[Frontend] Message type:', data.type);
-                        console.log('[Frontend] Message content:', data.content);
 
                         if (data.type === 'output') {
-                            console.log('[Frontend] Adding output to terminal');
-                            setTerminalOutput(prev => {
-                                console.log('[Frontend] Current terminal output length:', prev.length);
-                                return [...prev, { type: 'output', content: data.content }];
-                            });
+                            setTerminalOutput(prev => [...prev, { type: 'output', content: data.content }]);
                         } else if (data.type === 'error') {
-                            console.log('[Frontend] Adding error to terminal');
                             setTerminalOutput(prev => [...prev, { type: 'error', content: data.content }]);
                             setTerminalStatus('error');
                         } else if (data.type === 'close') {
-                            console.log('[Frontend] Process closed');
                             setTerminalStatus('idle');
                             setTerminalOutput(prev => [...prev, { type: 'info', content: `\n进程结束，退出码: ${data.code}` }]);
                         }
@@ -1065,247 +946,37 @@
                 };
             }, []);
 
-            React.useEffect(() => {
+            useEffect(() => {
                 loadFiles();
                 loadLogs();
                 loadEnvVars();
                 loadUserConfig();
             }, []);
 
-            const clearLogs = async () => {
-                try {
-                    await fetch('/api/logs/clear', { method: 'DELETE' });
-                    setLogs([]);
-                } catch (error) {
-                    console.error('清空日志失败:', error);
-                }
-            };
-
-            const EnvModal = ({ show, onClose, onSave, envVar }) => {
-                const [key, setKey] = useState(envVar?.key || pendingEnvVar?.key || '');
-                const [value, setValue] = useState(envVar?.value || pendingEnvVar?.value || '');
-                const [description, setDescription] = useState(envVar?.description || pendingEnvVar?.description || '');
-                const [secret, setSecret] = useState(envVar?.secret ?? pendingEnvVar?.secret ?? false);
-
-                if (!show) return null;
-
-                return (
-                    <div className="modal-overlay" onClick={onClose}>
-                        <div className="modal-content" onClick={e => e.stopPropagation()}>
-                            <h3 className="text-lg font-semibold mb-4">{envVar ? '编辑环境变量' : '添加环境变量'}</h3>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm text-gray-400 mb-1">键名</label>
-                                    <input
-                                        type="text"
-                                        className="input w-full"
-                                        value={key}
-                                        onChange={e => setKey(e.target.value)}
-                                        placeholder="例如: API_KEY"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-gray-400 mb-1">值</label>
-                                    <input
-                                        type={secret ? 'password' : 'text'}
-                                        className="input w-full"
-                                        value={value}
-                                        onChange={e => setValue(e.target.value)}
-                                        placeholder="输入值"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-gray-400 mb-1">描述</label>
-                                    <input
-                                        type="text"
-                                        className="input w-full"
-                                        value={description}
-                                        onChange={e => setDescription(e.target.value)}
-                                        placeholder="可选描述"
-                                    />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        id="secret"
-                                        checked={secret}
-                                        onChange={e => setSecret(e.target.checked)}
-                                        className="w-4 h-4"
-                                    />
-                                    <label htmlFor="secret" className="text-sm text-gray-400">隐藏值</label>
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button className="btn btn-secondary" onClick={onClose}>取消</button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => {
-                                        onSave({ key, value, description, secret });
-                                        setPendingEnvVar(null);
-                                        onClose();
-                                    }}
-                                >
-                                    保存
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
-
             return (
                 <div className="flex flex-col h-screen">
-                    <header className="header text-white p-4 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <i className="ri-code-s-slash-line text-2xl"></i>
-                            <h1 className="text-xl font-bold">Claude Code Web Manager</h1>
-                        </div>
-                        <div className="flex gap-2">
-                            <div
-                                className={`header-nav-item ${activeNav === 'editor' ? 'header-nav-item-active' : ''}`}
-                                onClick={() => setActiveNav('editor')}
-                            >
-                                <i className="ri-code-line h-4 w-4"></i>
-                                <span>编辑器</span>
-                            </div>
-                            <div
-                                className={`header-nav-item ${activeNav === 'env' ? 'header-nav-item-active' : ''}`}
-                                onClick={() => setActiveNav('env')}
-                            >
-                                <i className="ri-settings-3-line h-4 w-4"></i>
-                                <span>环境变量</span>
-                            </div>
-                            <div
-                                className={`header-nav-item ${activeNav === 'settings' ? 'header-nav-item-active' : ''}`}
-                                onClick={() => setActiveNav('settings')}
-                            >
-                                <i className="ri-user-settings-line h-4 w-4"></i>
-                                <span>个性化配置</span>
-                            </div>
-                            <div
-                                className={`header-nav-item ${activeNav === 'claude' ? 'header-nav-item-active' : ''}`}
-                                onClick={() => setActiveNav('claude')}
-                            >
-                                <i className="ri-robot-line h-4 w-4"></i>
-                                <span>Claude Code</span>
-                            </div>
-                            <div
-                                className={`header-nav-item ${activeNav === 'logs' ? 'header-nav-item-active' : ''}`}
-                                onClick={() => setActiveNav('logs')}
-                            >
-                                <i className="ri-file-list-3-line h-4 w-4"></i>
-                                <span>日志</span>
-                            </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button className="btn btn-primary" onClick={saveFile}>
-                                <i className="ri-save-line h-4 w-4"></i>
-                                <span className="ml-1">保存文件</span>
-                            </button>
-                        </div>
-                    </header>
+                    <Header 
+                        activeNav={activeNav} 
+                        setActiveNav={setActiveNav} 
+                        onSaveFile={saveFile} 
+                    />
 
                     <div className="flex flex-1 overflow-hidden">
-                        <aside className="sidebar flex flex-col" style={{ width: sidebarWidth }}>
-                            <div className="sidebar-header">
-                                {activeNav === 'editor' && (
-                                    <>
-                                        <h2 className="text-sm font-semibold text-gray-300 mb-3">文件浏览器</h2>
-                                        <div className="flex gap-2 mb-3">
-                                            <button className="btn btn-primary flex-1" onClick={() => loadFiles('.')}>
-                                                <i className="ri-home-line h-3.5 w-3.5 mr-1"></i>首页
-                                            </button>
-                                            <button className="btn btn-secondary" onClick={createDirectory}>
-                                                <i className="ri-folder-add-line h-3.5 w-3.5"></i>
-                                            </button>
-                                            <button className="btn btn-secondary" onClick={createFile}>
-                                                <i className="ri-file-add-line h-3.5 w-3.5"></i>
-                                            </button>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                className="input flex-1"
-                                                placeholder="输入路径..."
-                                                value={currentPath}
-                                                onChange={e => setCurrentPath(e.target.value)}
-                                            />
-                                            <button className="btn btn-primary" onClick={() => loadFiles(currentPath)}>
-                                                <i className="ri-search-line h-3.5 w-3.5"></i>
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                                {activeNav === 'logs' && (
-                                    <>
-                                        <h2 className="text-sm font-semibold text-gray-300 mb-3">日志管理</h2>
-                                        <div className="flex gap-2 mb-3">
-                                            <button className="btn btn-primary flex-1" onClick={loadLogs}>
-                                                <i className="ri-refresh-line h-3.5 w-3.5 mr-1"></i>刷新
-                                            </button>
-                                            <button className="btn btn-danger" onClick={clearLogs}>
-                                                <i className="ri-delete-bin-line h-3.5 w-3.5"></i>清空
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            {activeNav === 'editor' && (
-                                <div className="file-tree overflow-y-auto flex-1">
-                                    <div className="file-item" onClick={() => loadFiles(currentPath.split('/').slice(0, -1).join('/') || '.')}>
-                                        <i className="ri-arrow-left-s-line h-4 w-4 text-gray-500"></i>
-                                        <span>上一级</span>
-                                    </div>
-                                    {files
-                                        .sort((a, b) => {
-                                            if (a.isDirectory === b.isDirectory) {
-                                                return a.name.localeCompare(b.name);
-                                            }
-                                            return a.isDirectory ? -1 : 1;
-                                        })
-                                        .map((file, index) => {
-                                            const icon = file.isDirectory === true
-                                                ? { name: 'ri-folder-line', color: 'text-yellow-500' }
-                                                : getFileIcon(file.name);
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    className={`file-item group ${selectedFile?.path === file.path ? 'file-item-selected' : ''}`}
-                                                    onClick={() => file.isDirectory ? loadFiles(file.path) : loadFileContent(file)}
-                                                >
-                                                    <i className={`${icon.name} h-4 w-4 ${icon.color}`}></i>
-                                                    <span className="truncate flex-1">{file.name}</span>
-                                                    <button
-                                                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500"
-                                                        onClick={e => { e.stopPropagation(); deleteItem(file); }}
-                                                    >
-                                                        <i className="ri-delete-bin-line h-3.5 w-3.5"></i>
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                </div>
-                            )}
-
-                            {activeNav === 'logs' && (
-                                <div className="log-container overflow-y-auto flex-1">
-                                    {logs.length === 0 ? (
-                                        <div className="text-center text-gray-500 py-8">
-                                            <i className="ri-file-list-3-line h-12 w-12 mx-auto mb-2 opacity-50"></i>
-                                            <p>暂无日志</p>
-                                        </div>
-                                    ) : (
-                                        logs.map((log, index) => (
-                                            <div key={index} className="file-item">
-                                                <i className="ri-file-text-line h-4 w-4 text-blue-500"></i>
-                                                <span className="truncate flex-1">{log.message}</span>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            )}
-                        </aside>
+                        <Sidebar 
+                            activeNav={activeNav}
+                            currentPath={currentPath}
+                            files={files}
+                            selectedFile={selectedFile}
+                            sidebarWidth={sidebarWidth}
+                            onNavigate={setCurrentPath}
+                            onFileClick={loadFileContent}
+                            onDelete={deleteItem}
+                            onCreateDirectory={createDirectory}
+                            onCreateFile={createFile}
+                            onLoadFiles={loadFiles}
+                            onLoadLogs={loadLogs}
+                            onClearLogs={clearLogs}
+                        />
 
                         <div className="resizer"
                             style={{ cursor: 'col-resize' }}
@@ -1327,326 +998,84 @@
                         <main className="flex-1 flex flex-col main-content overflow-hidden">
                             {activeNav === 'editor' && (
                                 <div className="flex-1 flex flex-col overflow-hidden p-4">
-                                    <div className="flex-1 flex flex-col overflow-hidden" style={{ flex: '1 1 auto', minHeight: 0 }}>
-                                        <div className="tabs-container flex items-center justify-between px-4 py-2 flex-shrink-0">
-                                            <span className="text-sm text-gray-300">
-                                                {selectedFile ? selectedFile.path : '未选择文件'}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-gray-400">语言:</span>
-                                                <select
-                                                    className="input text-xs py-1 px-2 w-32"
-                                                    value={language}
-                                                    onChange={e => setLanguage(e.target.value)}
-                                                >
-                                                    <option value="plaintext">Plain Text</option>
-                                                    <option value="javascript">JavaScript</option>
-                                                    <option value="typescript">TypeScript</option>
-                                                    <option value="html">HTML</option>
-                                                    <option value="css">CSS</option>
-                                                    <option value="json">JSON</option>
-                                                    <option value="markdown">Markdown</option>
-                                                    <option value="python">Python</option>
-                                                    <option value="shell">Shell</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 editor-container overflow-hidden">
-                                            <div id="editor" style={{ height: '100%', width: '100%' }}></div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className="terminal-resizer"
-                                        onMouseDown={handleMouseDown}
-                                        style={{
-                                            height: '4px',
-                                            background: isResizing ? 'rgba(139, 92, 246, 0.5)' : 'rgba(75, 85, 99, 0.5)',
-                                            cursor: 'row-resize',
-                                            marginTop: '0.5rem',
-                                            transition: 'background 0.2s ease'
-                                        }}
-                                    ></div>
-
-                                    <div className="terminal-container flex-shrink-0" style={{ height: terminalHeight, marginTop: '0.5rem' }}>
-                                        <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-sm text-gray-300">终端</span>
-                                                {terminalStatus === 'running' && (
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        onClick={killTerminalProcess}
-                                                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
-                                                    >
-                                                        <i className="ri-stop-circle-line h-4 w-4"></i>
-                                                        终止
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <div className={`terminal-status terminal-status-${terminalStatus}`}>
-                                                {terminalStatus === 'idle' ? '就绪' : terminalStatus === 'running' ? '运行中' : '错误'}
-                                            </div>
-                                        </div>
-                                        <div className="terminal-output" id="terminal-output">
-                                            <div style={{ display: 'none' }}>
-                                                Debug: terminalOutput length = {terminalOutput.length}
-                                            </div>
-                                            {terminalOutput.length === 0 ? (
-                                                <div className="text-gray-500">终端就绪，输入命令开始...</div>
-                                            ) : (
-                                                terminalOutput.map((line, index) => (
-                                                    <div key={index} className={`mb-1 ${line.type === 'error' ? 'text-red-400' : line.type === 'input' ? 'text-green-400' : line.type === 'info' ? 'text-blue-400' : ''}`}>
-                                                        <span style={{ display: 'none' }}>[{line.type}]</span>
-                                                        {line.content}
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                        <div className="terminal-input-container flex-shrink-0">
-                                            <span className="terminal-prompt">{terminalStatus === 'running' ? '>' : '$'}</span>
-                                            <input
-                                                type="text"
-                                                className="terminal-input"
-                                                value={terminalCommand}
-                                                onChange={e => setTerminalCommand(e.target.value)}
-                                                onKeyPress={e => e.key === 'Enter' && (terminalStatus === 'running' ? sendTerminalInput() : executeTerminalCommand())}
-                                                placeholder={terminalStatus === 'running' ? '输入响应...' : '输入命令...'}
-                                                disabled={terminalStatus === 'error'}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeNav === 'env' && (
-                                <div className="flex-1 overflow-auto p-6">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-semibold">环境变量配置</h2>
-                                        <div className="flex gap-2">
-                                            <button
-                                                className="btn btn-secondary"
-                                                onClick={() => importEnvVars('minimax')}
-                                            >
-                                                <i className="ri-download-line h-4 w-4"></i>
-                                                <span className="ml-1">导入MiniMax</span>
-                                            </button>
-                                            <button
-                                                className="btn btn-secondary"
-                                                onClick={() => importEnvVars('bigmodel')}
-                                            >
-                                                <i className="ri-download-line h-4 w-4"></i>
-                                                <span className="ml-1">导入BigModel</span>
-                                            </button>
-                                            <button
-                                                className="btn btn-primary"
-                                                onClick={() => {
-                                                    setEditingEnv(null);
-                                                    setPendingEnvVar(null);
-                                                    setShowEnvModal(true);
-                                                }}
-                                            >
-                                                <i className="ri-add-line h-4 w-4"></i>
-                                                <span className="ml-1">添加变量</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {envVars.map(env => (
-                                            <div key={env.id} className="env-item">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-semibold text-purple-400">{env.key}</span>
-                                                        {env.secret && <i className="ri-lock-line text-gray-400" title="隐藏值"></i>}
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            className="btn btn-secondary text-xs"
-                                                            onClick={() => {
-                                                                setEditingEnv(env);
-                                                                setShowEnvModal(true);
-                                                            }}
-                                                        >
-                                                            <i className="ri-edit-line h-3 w-3"></i>
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-danger text-xs"
-                                                            onClick={() => deleteEnvVar(env.id)}
-                                                        >
-                                                            <i className="ri-delete-bin-line h-3 w-3"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className="text-sm text-gray-400 mb-1">
-                                                    值: {env.secret ? '••••••••' : env.value}
-                                                </div>
-                                                {env.description && (
-                                                    <div className="text-xs text-gray-500">{env.description}</div>
-                                                )}
-                                            </div>
-                                        ))}
-                                        {envVars.length === 0 && (
-                                            <div className="text-center text-gray-500 py-8">
-                                                暂无环境变量，点击上方按钮添加
-                                            </div>
-                                        )}
-                                    </div>
-                                    <EnvModal
-                                        show={showEnvModal}
-                                        onClose={() => setShowEnvModal(false)}
-                                        onSave={editingEnv ? (updates) => updateEnvVar(editingEnv.id, updates) : addEnvVar}
-                                        envVar={editingEnv}
+                                    <EditorPanel 
+                                        selectedFile={selectedFile}
+                                        language={language}
+                                        onLanguageChange={setLanguage}
+                                    />
+                                    <TerminalPanel 
+                                        terminalHeight={terminalHeight}
+                                        terminalOutput={terminalOutput}
+                                        terminalCommand={terminalCommand}
+                                        terminalStatus={terminalStatus}
+                                        onCommandChange={setTerminalCommand}
+                                        onExecute={executeTerminalCommand}
+                                        onSendInput={sendTerminalInput}
+                                        onKillProcess={killTerminalProcess}
+                                        onResizeStart={handleMouseDown}
                                     />
                                 </div>
                             )}
 
+                            {activeNav === 'env' && (
+                                <EnvPanel 
+                                    envVars={envVars}
+                                    onImport={importEnvVars}
+                                    onAdd={() => {
+                                        setEditingEnv(null);
+                                        setPendingEnvVar(null);
+                                        setShowEnvModal(true);
+                                    }}
+                                    onEdit={(env) => {
+                                        setEditingEnv(env);
+                                        setShowEnvModal(true);
+                                    }}
+                                    onDelete={deleteEnvVar}
+                                />
+                            )}
+
                             {activeNav === 'settings' && (
-                                <div className="flex-1 overflow-auto p-6">
-                                    <h2 className="text-xl font-semibold mb-6">个性化配置</h2>
-                                    <div className="max-w-2xl space-y-6">
-                                        <div className="env-item">
-                                            <h3 className="font-semibold mb-4">基本信息</h3>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm text-gray-400 mb-1">用户名</label>
-                                                    <input
-                                                        type="text"
-                                                        className="input w-full"
-                                                        value={userConfig.username || ''}
-                                                        onChange={e => setUserConfig({ ...userConfig, username: e.target.value })}
-                                                        placeholder="输入用户名"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm text-gray-400 mb-1">邮箱</label>
-                                                    <input
-                                                        type="email"
-                                                        className="input w-full"
-                                                        value={userConfig.email || ''}
-                                                        onChange={e => setUserConfig({ ...userConfig, email: e.target.value })}
-                                                        placeholder="输入邮箱"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="env-item">
-                                            <h3 className="font-semibold mb-4">工作目录</h3>
-                                            <div>
-                                                <label className="block text-sm text-gray-400 mb-1">默认工作目录</label>
-                                                <input
-                                                    type="text"
-                                                    className="input w-full"
-                                                    value={userConfig.workingDir || '.'}
-                                                    onChange={e => setUserConfig({ ...userConfig, workingDir: e.target.value })}
-                                                    placeholder="输入工作目录路径"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="env-item">
-                                            <h3 className="font-semibold mb-4">服务器配置</h3>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm text-gray-400 mb-1">端口</label>
-                                                    <input
-                                                        type="number"
-                                                        className="input w-full"
-                                                        value={userConfig.port || 3000}
-                                                        onChange={e => setUserConfig({ ...userConfig, port: parseInt(e.target.value) })}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm text-gray-400 mb-1">主机</label>
-                                                    <input
-                                                        type="text"
-                                                        className="input w-full"
-                                                        value={userConfig.host || '0.0.0.0'}
-                                                        onChange={e => setUserConfig({ ...userConfig, host: e.target.value })}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="env-item">
-                                            <h3 className="font-semibold mb-4">其他设置</h3>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-gray-400">自动启动</span>
-                                                <label className="switch">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={userConfig.autoStart || false}
-                                                        onChange={e => setUserConfig({ ...userConfig, autoStart: e.target.checked })}
-                                                    />
-                                                    <span className="slider"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <button
-                                            className="btn btn-primary w-full"
-                                            onClick={() => updateUserConfig(userConfig)}
-                                        >
-                                            <i className="ri-save-line h-4 w-4"></i>
-                                            <span className="ml-1">保存配置</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                <SettingsPanel 
+                                    userConfig={userConfig}
+                                    onConfigChange={setUserConfig}
+                                    onSave={updateUserConfig}
+                                />
                             )}
 
                             {activeNav === 'claude' && (
-                                <div className="flex-1 flex flex-col overflow-hidden">
-                                    <div className="tabs-container flex items-center justify-between px-4 py-2">
-                                        <h2 className="text-sm font-semibold text-gray-300">Claude AI 对话</h2>
-                                    </div>
-                                    <div className="chat-container flex-1 overflow-hidden">
-                                        <div className="chat-messages">
-                                            {chatMessages.length === 0 ? (
-                                                <div className="text-center text-gray-500 py-8">
-                                                    <i className="ri-robot-line text-4xl mb-2"></i>
-                                                    <p>开始与 Claude AI 对话</p>
-                                                </div>
-                                            ) : (
-                                                chatMessages.map((msg, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className={`chat-message ${msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant'}`}
-                                                    >
-                                                        <div className="text-xs opacity-75 mb-1">
-                                                            {msg.role === 'user' ? '你' : 'Claude'}
-                                                        </div>
-                                                        <div>{msg.content}</div>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                        <div className="chat-input-container">
-                                            <textarea
-                                                className="chat-input"
-                                                rows="3"
-                                                value={chatInput}
-                                                onChange={e => setChatInput(e.target.value)}
-                                                onKeyPress={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendChatMessage())}
-                                                placeholder="输入消息，按 Enter 发送..."
-                                            ></textarea>
-                                            <div className="flex justify-end mt-2">
-                                                <button
-                                                    className="btn btn-primary"
-                                                    onClick={sendChatMessage}
-                                                    disabled={!chatInput.trim()}
-                                                >
-                                                    <i className="ri-send-plane-line h-4 w-4"></i>
-                                                    <span className="ml-1">发送</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ChatPanel 
+                                    chatMessages={chatMessages}
+                                    chatInput={chatInput}
+                                    onInputChange={setChatInput}
+                                    onSendMessage={sendChatMessage}
+                                />
+                            )}
+
+                            {activeNav === 'logs' && (
+                                <LogsPanel logs={logs} />
                             )}
                         </main>
                     </div>
+
+                    <EnvModal
+                        show={showEnvModal}
+                        onClose={() => setShowEnvModal(false)}
+                        onSave={editingEnv ? (updates) => updateEnvVar(editingEnv.id, updates) : addEnvVar}
+                        envVar={editingEnv}
+                        pendingEnvVar={pendingEnvVar}
+                    />
                 </div>
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function renderApp() {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        }
+
+        loadComponents().then(() => {
+            renderApp();
+        });
     </script>
 </body>
-
 </html>
